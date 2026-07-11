@@ -314,3 +314,385 @@ James F. Allen, 1983: between ANY two intervals there are **exactly 13 possible 
 - **LLM talks · KG verifies facts · Reasoner checks consistency.**
 - **Rules give guarantees; statistics never do** (constraint injection).
 - XAI: the final symbolic step makes decisions explainable → regulators satisfied.
+
+---
+
+# LECTURE 4
+
+## Part 1 — The Semantic Web
+
+### 1.1 — The problem: a web that displays but doesn't understand
+
+- HTML tells the browser **HOW to display** (bold, layout) — nothing about **WHAT it means**. Old search = **word matching**: "father of Albert Einstein" → pages containing "father" + "Einstein." It even matches "father of modern physics" — words can lie about meaning.
+- **Semantic Web fix:** store machine-readable facts with relationships: `Hermann Einstein —FATHER OF→ Albert Einstein` → machine **follows the relationship** and answers directly: Hermann.
+- **Definition: teaching computers to UNDERSTAND information, not just display it.**
+- Daily proof: **Google Knowledge Graph, 500 billion facts** — "Eiffel Tower" info card (Paris, 330 m, Gustave Eiffel) with **no website click**. Signatures: linked data · direct answers · no click.
+
+### 1.2 — Three generations of the web
+
+| | Web 1.0 (1990s) | Web 2.0 (2004+) | Web 3.0 (today) |
+|---|---|---|---|
+| Nickname | The Library | Library + Café | Smart Library |
+| You can | READ only | READ + WRITE | machines UNDERSTAND |
+| Examples | 1998 uni homepage, 2001 catalogue | Facebook, YouTube, Wikipedia, WhatsApp, Reddit | Knowledge Graph, Siri, Wikidata |
+
+- **Dividing questions:** users can write? no → 1.0. yes → 2.0+. Machines understand meaning & answer directly? → 3.0.
+- ⚠ My trap (fell in it): **interactive ≠ semantic** — Reddit voting and YouTube = **2.0** (humans interacting), NOT 3.0. Test: "is a MACHINE understanding meaning, or are HUMANS just interacting?"
+
+### 1.3 — The Layer Cake (7 layers, bottom-up)
+
+XML/Unicode (alphabet) → **URI** (unique ID per thing) → **RDF** (facts as triples) → RDFS (basic types) → **OWL** (what categories mean + rules) → Rules/SWRL (IF-THEN) → Trust (believe it?).
+
+- Course studies: URI, RDF, OWL (+ SPARQL queries on top).
+- **Hook: URI names it · RDF states it · OWL rules it.** (URI = CNIC for web resources.)
+
+### Part 1 quiz & activity — SOLVED (likely exam Qs)
+
+**① HTML hospital directory = Semantic Web?** NO — HTML only controls display. Missing: RDF/OWL markup adding machine-processable meaning ("this string is a hospital name, this is a location"). A table humans can read ≠ facts machines understand.
+
+**② App answers "which cardiologist in Lahore is free Saturday?" directly** → **Web 3.0**; two technologies: **RDF** (doctor/specialty/availability as linked triples) + **SPARQL/KG query engine** (pattern-matches triples instead of keyword-searching pages).
+
+**③ Facebook & Wikipedia = which generation?** **2.0** — users create/share, but machines can't read meaning. To become 3.0: add **semantic markup (RDF tags)** so machines understand entities + relationships.
+
+**④ Classification set:** static 1998 homepage **1.0** · Google direct answer **3.0** · YouTube **2.0** · Siri pharmacy **3.0** · 2001 read-only catalogue **1.0** · WhatsApp **2.0** · Wikidata RDF triples **3.0** · Reddit-style voting **2.0**.
+
+### 🧠 REMEMBER (Part 1)
+
+- **Semantic Web = understand, not display.** Old web matches words; semantic web follows relationships.
+- Generations: **Library → +Café → Smart Library.** Machine understands meaning? → 3.0. **Interactive ≠ semantic** (YouTube/Reddit = 2.0).
+- **URI names it · RDF states it · OWL rules it.**
+- Google KG: **500B facts, direct answers, no click.**
+
+## Part 2 — RDF & OWL
+
+### 2.1 — RDF triples & URIs
+
+- **RDF = Resource Description Framework** — W3C standard for facts as **(Subject, Predicate, Object)** — grammar of a sentence: Ali —studies→ ComputerScience. Draw all triples → RDF knowledge graph (nodes = things, arrows = relationships).
+- **URI = CNIC for web resources:** `<http://dbpedia.org/resource/Lahore>` — globally unambiguous; lets facts from different sources link to the SAME thing.
+- Object kinds: **resource** (a thing, gets its own arrows — ComputerScience) vs **literal** (raw value, dead end — 1985, 14,000,000).
+- Predicates = clean camelCase relations (foundedYear), entities named exactly as given (FAST, not FAST_Lahore unless stated).
+
+### 2.2 — Turtle syntax: 4 punctuation marks
+
+- **`.`** ends a complete statement · **`;`** same subject, new predicate · **`,`** same subject+predicate, new object · **`@prefix`** = URI shortcut. (Turtle = Terse RDF Triple Language.)
+- Logic: *how much am I repeating?* Nothing → `.` · subject → `;` · subject+predicate → `,`
+- `FAST isA University ; locatedIn Lahore ; offers CS , AI .` = 4 triples, ONE period.
+- ⚠ My traps: **never forget the final period** (statement invalid without it); comma = only object changes, semicolon = predicate changes too; don't abbreviate entity names (uni ≠ University).
+
+### 2.3 — OWL: rules about facts
+
+- **OWL = Web Ontology Language** (letters reordered to say "owl" — the wise bird). **RDF stores FACTS · OWL stores RULES about them** (the instruction manual).
+- 4 class constructs: **subClassOf** (every child IS parent) · **disjointWith** (nothing can be both) · **equivalentClass** (two names, one class) · **unionOf** (member of at least one).
+- Properties: **ObjectProperty** = thing→thing (worksAt) · **DatatypeProperty** = thing→value (age 25).
+- 3 behaviours: **Transitive** (chains: ancestor) · **Symmetric** (both ways: marriedTo) · **Functional** (at most one value: biologicalMother).
+- ⚠ My trap: sort first — sentence about CATEGORIES → class construct; about a RELATIONSHIP's behaviour → property behaviour. Cues: "cannot be both"=disjoint · "same class"=equivalentClass · "every X is a Y"=subClassOf · "chains"=Transitive · "both ways"=Symmetric · "exactly one value"=Functional.
+- **SNOMED CT:** 350,000+ medical concepts (NHS) — drug treats ViralInfection ⟹ auto-known to help COVID-19 (subclass), no manual link.
+
+### 2.4 — The Reasoner: two jobs
+
+- **Job 1 INFER (entailment up the chain):** Tux isA Penguin + Penguin⊑Bird ⟹ Tux is a Bird, cannot fly. Simba: 3 free inferences from 1 fact.
+- **Job 2 CATCH contradictions:** Tux also isA Eagle (FlyingBird, disjoint with NonFlyingBird) → **INCONSISTENCY flagged automatically** — a FEATURE: data validation at scale, before harm (hospitals).
+
+### Part 2 worked examples — SOLVED (likely exam Qs)
+
+**① FAST activity + BONUS graph:** (FAST_Lahore, rdf:type, University) · (FAST_Lahore, locatedIn, Lahore) · (FAST_Lahore, foundedYear, 1985) · (FAST_Lahore, offers, ComputerScience) · (FAST_Lahore, offers, AI) · (FAST_Lahore, enrollment, 5000). Graph: FAST_Lahore in the centre, 6 labelled arrows out (two `offers` arrows — one per object):
+
+```
+         University        Lahore
+              ▲              ▲
+        rdf:type        locatedIn
+              \             /
+  1985 ◄─foundedYear─ FAST_Lahore ─offers──► ComputerScience
+              /             \
+       enrollment          offers
+             ▼                ▼
+           5000               AI
+```
+
+Key: FAST_Lahore appears in ALL 6 triples (central node). `offers` appears TWICE = two separate arrows. Literals (1985, 5000) are dead-end values; University, Lahore, CS, AI are resources.
+
+**② Ahmed the Surgeon:** Surgeon⊑Doctor⊑HealthcareWorker + Ahmed isA Surgeon ⟹ reasoner infers **Ahmed is a Doctor AND a HealthcareWorker** — entailment up the chain, no extra triples written.
+
+**③ Robot99:** isA Student AND isA Teacher + Student disjointWith Teacher → **INCONSISTENCY ERROR flagged** — useful: catches data-entry mistakes automatically (maybe he's a TA); that's the whole point of disjointWith.
+
+**④ OWL reasoning set:** Simba (Lion⊑Mammal⊑Animal⊑LivingThing) → 3 auto-inferences · Tesla isA Car AND Bicycle (disjoint) → inconsistency · Wheel isPartOf Engine isPartOf Car (transitive) → **Wheel isPartOf Car** auto-added · Ali isMarriedTo Fatima (symmetric) → **Fatima isMarriedTo Ali** auto-added.
+
+### 🧠 REMEMBER (Part 2)
+
+- **RDF = Resource Description Framework = facts (S-P-O) · OWL = Web Ontology Language = rules about facts · URI = CNIC.**
+- Turtle: **`.` ends · `;` new predicate · `,` new object · @prefix shortcut** — never forget the final period.
+- Class constructs vs property behaviours — categories vs relationships. Cue words: both/same/every-X-is-Y vs chains/both-ways/one-value.
+- **Reasoner: INFERS up subclass chains + FLAGS disjoint violations — automatic, at scale, a feature.**
+
+## Part 3 — SPARQL
+
+### 3.1 — Pattern matching + 4 query types
+
+- **SPARQL** = query language for RDF graphs. **`?x` = a variable, a blank to fill**; the engine returns every combination filling ALL blanks simultaneously.
+- WHERE patterns are **AND-ed** — each is a complete S-P-O triple with `?blanks`.
+- 4 types: **SELECT** → table ("find all") · **ASK** → TRUE/FALSE ("does one exist?") · **CONSTRUCT** → new triples from old · **DESCRIBE** → all triples about one resource.
+- ⚠ **ASK-vs-SELECT trap:** question ends in "yes or no" → ASK. `ASK { :DrKhan :taught :AI101 . }` — SELECT is wrong because you want existence, not data.
+
+### 3.2 — FILTER, OPTIONAL, COUNT
+
+- **FILTER = sieve** for conditions: `FILTER(?rating > 8.6)`. Cue: above/below/greater → FILTER.
+- **OPTIONAL = left join:** without it, a missing value kills the WHOLE row (AND-ed patterns). `OPTIONAL { ?p :bloodType ?bt }` → all patients appear, cell empty if unrecorded. Cue: "include even if missing." (Query-level echo of missing ≠ false.)
+- **COUNT/GROUP BY/ORDER BY:** `SELECT ?dir (COUNT(?movie) AS ?n) WHERE {…} GROUP BY ?dir ORDER BY DESC(?n)` → tallies per director, sorted.
+- ⚠ My traps: every pattern = full S-P-O (subject seat ≠ predicate word); ONE WHERE block only — FILTER lives inside it; the number keyword is FILTER, not a second WHERE.
+
+### Part 3 worked examples — SOLVED (likely exam Qs)
+
+**① Nolan movies [SELECT]:** `SELECT ?movie WHERE { ?movie :director :Nolan . }` → Inception, Interstellar.
+
+**② Rating > 8.6 [FILTER]:** `SELECT ?movie ?rating WHERE { ?movie :rating ?rating . FILTER(?rating > 8.6) }` → Inception (8.8).
+
+**③ Any SciFi? [ASK]:** `ASK { ?m :genre :SciFi . }` → TRUE.
+
+**④ Director tallies [COUNT]:** `SELECT ?dir (COUNT(?movie) AS ?n) WHERE { ?movie :director ?dir . } GROUP BY ?dir ORDER BY DESC(?n)` → Nolan 2, Scott 1.
+
+**⑤ CS students CGPA>3.5:** `SELECT ?student WHERE { ?student isA :Student . ?student enrolled :CS . ?student cgpa ?cgpa . FILTER(?cgpa > 3.5) }` — 3 AND-ed patterns + FILTER.
+
+**⑥ Blood types incl. missing [OPTIONAL]:** all patients listed; Sara (none recorded) keeps her row, cell empty — without OPTIONAL her row is absent.
+
+### 🧠 REMEMBER (Part 3)
+
+- **? = blank to fill; WHERE patterns AND-ed; each pattern a full S-P-O.**
+- **SELECT table · ASK yes/no · CONSTRUCT new triples · DESCRIBE everything.**
+- **Numbers → FILTER · "even if missing" → OPTIONAL (left join) · "how many per" → COUNT/GROUP BY.**
+
+## Part 4 — Probability & Bayes' Theorem
+
+### 4.1 — Why classical logic fails + the 3 probability rules
+
+- Classical logic = **light switch** (TRUE/FALSE only). Real world needs a **dimmer** (0→1). Five breakers: **Missing info** (car not in DB ≠ no car) · **Uncertain data** (thermometer ±0.5°) · **Conflicting rules** (penguins) · **Vague words** (is Lahore "big"?) · **World changes** (facts expire). Fix: **Probability** for uncertainty (this part), **Fuzzy** for vagueness (Part 5).
+- **Rule 1 Complement:** P(NOT A) = 1 − P(A) — everything totals 1.0. P(rain)=0.7 → P(no rain)=0.3.
+- **Rule 2 AND (independent):** P(A AND B) = P(A) × P(B) — both must happen: heads twice = 0.5×0.5 = 0.25.
+- **Rule 3 Conditional:** P(A|B) = prob of A GIVEN B — **the | shrinks the universe** to only-B, re-count inside: P(Ace|Spade) = 1/13 (52→13 cards) · P(6|even) = 1/3 (universe → {2,4,6}).
+
+### 4.2 — Bayes' Theorem: starting guess → news → updated guess
+
+**What Bayes IS:** you do it daily. "Pakistan wins today?" — *"50-50"* (**starting guess**). News: Babar injured. — *"30% now"* (**updated guess**). Your gut moved the number when news arrived. **Bayes = the calculator that does that movement with exact numbers.**
+
+```
+             P(E|H) × P(H)                    A
+P(H|E)  =  -----------------   =   -----------------      (P(E) = A + B)
+                 P(E)                     A + B
+```
+
+| Symbol | Fancy name | Real meaning |
+|---|---|---|
+| H | Hypothesis | the sentence in question: "THIS item is defective" |
+| P(H) | Prior | **starting guess** — before any news ("2% are defective" → 0.02) |
+| E | Evidence | **the news** — what you saw: flag / positive test / word FREE |
+| P(E\|H) | Likelihood | the test's spec: signal rate among the YES-group |
+| P(H\|E) | Posterior ★ | **updated guess** — after the news = THE ANSWER |
+
+**How to compute — groups of 100 + two multiplications:**
+
+1. Split 100 items into **YES-group** ("2% defective" → 2 items) and **NO-group** (98).
+2. Signal rate per group: "flags 98% OF DEFECTIVE" → YES rate 0.98 · "wrongly flags 5% OF GOOD" → NO rate 0.05.
+3. **A = YES-group × its rate** = 0.02×0.98 = 0.0196 (real alarms) · **B = NO-group × its rate** = 0.98×0.05 = 0.049 (false alarms).
+4. **Updated guess = A/(A+B)** = 0.0196/0.0686 ≈ **28.6%** — "of all alarms, what share is real?"
+
+**Reading rules:**
+
+- **THE OF-RULE: the noun after "OF" goes AFTER the bar.** "80% of CHEATERS" → P(alert|cheater). Works always — even exposes sentences that are *already* the answer ("of all triggered bags, 12% banned" = P(banned|triggered) = already an updated guess, no Bayes needed).
+- **Direction trap:** "beeps for 90% of expired" ≠ "90% of beeps are expired" — first is the spec (given), second is the updated guess (computed: it came out 61%, not 90!).
+- **Chaining:** today's updated guess = tomorrow's starting guess (2nd test, Gmail's words).
+
+### 4.3 — Worked calculations + the Base-Rate Effect (⭐ guaranteed exam question)
+
+**Model layout (memorize the SHAPE — numbers change per question):**
+
+```
+Given: 1% have disease · test catches 95% of sick · 10% false alarms
+
+Step 1 — LIST:    P(D) = 0.01     P(noD) = 0.99
+                  P(+|D) = 0.95   P(+|noD) = 0.10
+Step 2 — P(+):    A = 0.01 × 0.95 = 0.0095   (real alarms)
+                  B = 0.99 × 0.10 = 0.099    (false alarms)
+                  P(+) = A + B = 0.1085
+Step 3 — ANSWER:  P(D|+) = A/(A+B) = 0.0095/0.1085 ≈ 8.76%
+Interpret: despite a positive test, only ~9% likely sick — base-rate effect.
+```
+
+**Base-Rate Effect in plain English (the "explain WHY without calculating" question):** test 1 crore people. Sick 1% = 1,00,000 → 95% caught = **95,000 real positives**. Healthy 99,00,000 → 10% wrongly flagged = **9,90,000 false positives**. Only 95,000 of 10,85,000 positives are real → 8.76%. **A huge healthy group × a small false-alarm rate makes far more false alarms than the tiny sick group makes real ones. Rarity beats accuracy.**
+
+**All five solved examples (same recipe every time):**
+
+| Question | Starting guess | A | B | Updated guess |
+|---|---|---|---|---|
+| Disease (slides) | 1% | .0095 | .099 | **8.76%** |
+| COVID (slides' activity) | 5% | .045 | .076 | **37.2%** |
+| Spam "FREE" (slides' quiz) | 40% | .32 | .03 | **91.4%** |
+| Factory scanner (my practice) | 2% | .0196 | .049 | **28.6%** |
+| Cheating proctor (my practice) | 5% | .04 | .057 | **41.2%** |
+
+- Feel the pattern: **rarer thing → lower updated guess** (1%→8.76% vs 40%→91.4%). Sanity-check every answer against it.
+- Why COVID 37.2% > disease 8.76%: base rate 5% vs 1% — less rare → positives more meaningful.
+- Follow-up they love: "what next?" → **second confirmatory test** — 37.2% becomes the new starting guess → two positives ≈ 92%+. Gmail: chains 100+ words → 99.9%.
+
+### 4.4 — Bayesian Networks: the burglar alarm
+
+```
+Burglary (0.001)   Earthquake (0.002)
+        \             /
+         ▼           ▼
+           🔔 ALARM          CPT: B+E→0.95 · B→0.94 · E→0.29 · neither→0.001
+         /           \
+        ▼             ▼
+   John Calls     Mary Calls
+```
+
+- **Bayesian network = map of cause→effect arrows + probabilities.** Each node's **CPT (Conditional Probability Table)** comes **from domain experts — given, never calculated by you.**
+- **FORWARD (predictive) = cause→effect, WITH the arrows — multiply along the path:** P(John calls | burglary) = 0.94 × 0.90 ≈ **85%**.
+- **BACKWARD (diagnostic) = effect→cause, AGAINST the arrows — that's Bayes:** John called → P(burglary) 0.001 → **1.67%**; Mary also calls (updated guess becomes new starting guess) → **28.4%**.
+- ⚠ Direction trap: "John calls — burglary?" = **BACKWARD**, and P(burglary) **INCREASES** (evidence supports its cause) — but stays far from certain (28.4%, not 90%). Don't invent hop numbers — read each from the given CPT.
+
+### ⚠ My traps — in plain words (re-read tomorrow morning)
+
+- **2% = 0.02, NOT 0.2.** Percent means "out of 100" → slide the decimal TWO places. 0.2 would be 20 out of 100 — ten times too big, ruins everything after it.
+- **0.9 × 0.9 = 0.81, not 0.18.** Multiply digits (9×9=81), then count decimal places. Sanity check: two 90% events together should still be LIKELY — 0.18 screams "wrong."
+- **After OF → after the bar.** I reversed it twice. "Alerts on 80% of cheaters": the 80% lives INSIDE the cheater group → P(alert|cheater). Writing P(cheater|alert)=0.80 claims the ANSWER before computing — the examiner's favourite wrong answer.
+- **H is a sentence, P(H) is its number.** H = "this bike is expired" (a claim); P(H) = 0.15 (how likely the claim is, before news).
+- **The dice answer isn't the card answer.** "Given even" → universe = {2,4,6} → P(6|even)=1/3. Recompute the shrunken universe fresh each time; don't parrot 1/13.
+- **Forward multiplies along arrows; backward needs Bayes.** If you observed an EFFECT (call/flag/positive) and want the CAUSE — it's backward, use Bayes, and the cause's probability goes UP but rarely near certainty.
+
+### 🧠 REMEMBER (Part 4)
+
+- Light switch → **dimmer**. Five breakers: missing·uncertain·conflicting·vague·changing.
+- 3 rules: **NOT = 1−P · AND = multiply · | shrinks the universe.**
+- **Bayes = starting guess + news → updated guess** (cricket: 50% → Babar injured → 30%).
+- **A = YES-group × its rate · B = NO-group × its rate · answer = A/(A+B).**
+- **OF-rule: after "of" → after the bar.**
+- **Base rate: rarity beats accuracy** (95,000 real vs 9,90,000 false).
+- Networks: **forward = along arrows (multiply) · backward = Bayes; CPT from experts; updated guess chains.**
+
+## Part 5 — Markov Models & Fuzzy Logic
+
+### 5.1 — Markov Chains
+
+- **Markov Property (one-liner worth marks):** *the next state depends ONLY on the current state — history is irrelevant.* Board game: token on square 34 — 5 or 50 moves to get there, doesn't matter. Chess: the current board already contains the history.
+- **Transition matrix — ROW = where you are NOW (from), COLUMN = where you go (to):**
+
+| From \ To | Sunny | Rainy | Cloudy |
+|---|---|---|---|
+| **Sunny** | 0.70 | 0.20 | 0.10 |
+| **Rainy** | 0.30 | 0.40 | 0.30 |
+| **Cloudy** | 0.50 | 0.30 | 0.20 |
+
+- ⚠ **Every row sums to 1.0** — you must go somewhere (instant sanity check / find-the-error question).
+- **THE finger-walk recipe (multi-step questions):**
+  1. Each hop's number = **(current state's ROW → next state's COLUMN)**.
+  2. **MULTIPLY hops within one story** — both must happen (AND rule).
+  3. **ADD across stories** — any route counts (alternatives).
+- **Worked example 1 (slides):** today Rainy → P(Sunny in 2 days)? Day-1 can be S/R/C → 3 stories:
+
+| Story | Hop 1 | Hop 2 | Product |
+|---|---|---|---|
+| R→**S**→S | Rainy→Sunny = 0.30 | Sunny→Sunny = 0.70 | **0.21** |
+| R→**R**→S | Rainy→Rainy = 0.40 | Rainy→Sunny = 0.30 | **0.12** |
+| R→**C**→S | Rainy→Cloudy = 0.30 | Cloudy→Sunny = 0.50 | **0.15** |
+
+  **Total = 0.21 + 0.12 + 0.15 = 0.48 = 48%**
+
+- **Worked example 2 (my practice):** today Cloudy → P(Rainy in 2 days)? `C→S→R: 0.50×0.20=0.10` · `C→R→R: 0.30×0.40=0.12` · `C→C→R: 0.20×0.30=0.06` → **0.28 = 28%**
+- **Single-path case:** exact route named ("Cart→Checkout→Buy in exactly 2 steps") → ONE story, just multiply: 0.5 × 0.7 = **35%**.
+- Close every answer with: *only the current state was needed — history irrelevant.*
+
+### 5.2 — Hidden Markov Models (HMM)
+
+- **The umbrella prisoner:** man in a cell can't see the WEATHER (hidden state), only whether the guard carries an UMBRELLA (observation). Weather CAUSES the umbrella. **HMM = a real thing changing over time, seen only through its footprints.** Doctor: Healthy/Sick hidden, "feels Normal/Tired" observed. Siri: phonemes hidden, audio frequencies observed.
+- **Two tables = two different arrows (every row sums to 1):**
+
+**TRANSITION matrix (hidden → next hidden) — "how does the hidden thing move?"**
+
+| From \ To | Healthy | Sick |
+|---|---|---|
+| **Healthy** | 0.70 | 0.30 |
+| **Sick** | 0.40 | 0.60 |
+
+**EMISSION matrix (hidden → what you see) — "what does the state show?"**
+
+| State \ Observation | Normal | Tired |
+|---|---|---|
+| **Healthy** | 0.80 | 0.20 |
+| **Sick** | 0.40 | 0.60 |
+
+- **The two-row picture:**
+
+```
+Day:        Sun          Mon          Tue
+HIDDEN:   Healthy ──?──▶  ?  ──?──▶   ?       ← blank row: the actual health (unknown)
+                          │            │
+                        emits        emits
+                          ▼            ▼
+SEEN:                   TIRED        TIRED    ← fixed, in ink
+```
+
+- **⭐ THE EYEBALL METHOD (exam tool — what the slides do):** for each observation, **pick the state that emits it most strongly** (read the emission table): Tired → Sick (0.60 beats 0.20) · Normal → Healthy (0.80 beats 0.40). Slides' sequence (Tired, Tired, Normal, Tired) → **Sick, Sick, Healthy, Sick** — no calculation needed. Grad-level closer: *"transition probabilities would refine borderline cases."*
+- ⚠ **Spot-the-model trap:** ask *"is the state itself observable?"* Psychologist sees Engaged/Withdrawn/Tearful, never Depressed/Stable → **HMM**. Weather out the window → plain **Markov**.
+
+### 5.3 — Fuzzy Logic: degrees of truth
+
+- **The problem (vague words):** rule TALL = above 180cm → Ali 179.9 NOT TALL, Bilal 180.1 TALL — **0.2cm decided everything. Absurd.**
+- **The fix — membership degree μ, between 0 and 1:** 160cm → μ(tall)=0.0 · 170 → 0.3 · 178 → 0.7 · 185 → 1.0. Smooth slope, no cliff; Ali at 179.9 → μ ≈ 0.85 "almost fully tall."
+- **The three operations** (Ali: μ(tall)=0.7, μ(fast)=0.4):
+
+| Operation | Formula | Ali | WHY |
+|---|---|---|---|
+| **AND** | **MIN**(μ₁, μ₂) | min(0.7, 0.4) = **0.4** | both needed → weakest link |
+| **OR** | **MAX**(μ₁, μ₂) | max(0.7, 0.4) = **0.7** | either counts → strongest carries you |
+| **NOT** | **1 − μ** | 1 − 0.7 = **0.3** | 70% tall forces 30% not-tall |
+
+- **Solved (slides' quiz):** patient μ(young)=0.6, μ(healthy)=0.8 → AND = **0.6** ("60% both-young-and-healthy — limited by the weaker side, youth") · OR = **0.8** · NOT young = **0.4** (somewhat middle-aged).
+- ⚠ **Fuzzy AND = MIN, NOT multiply** — multiplying is probability's AND. Keep the worlds apart: **probability = uncertainty about a fact** ("will it rain?") · **fuzzy = degree of a vague word** ("is it hot?").
+
+### 5.4 — Fuzzy Inference System (F-R-A-D)
+
+> **Crisp number in → F-R-A-D → crisp number out.** AC: 30°C in → 68% fan out.
+
+1. **FUZZIFY** — input → membership degrees: 30°C → COOL 0.0 · WARM 0.5 · HOT 0.3.
+2. **RULE EVALUATION** — **a rule fires at exactly the μ of its IF-part (just copy the number):** IF COOL→SLOW fires 0.0 · IF WARM→MEDIUM fires 0.5 · IF HOT→FAST fires 0.3.
+3. **AGGREGATE** — clip each fired output shape at its strength (MEDIUM at 0.5, FAST at 0.3), merge into one shape.
+4. **DEFUZZIFY** — **centroid (centre of gravity)** of merged shape → one number: **fan = 68%.**
+
+- **Sanity rule: the output leans toward the strongest-firing rule.**
+- **Solved at 22°C** (COOL 0.8, WARM 0.2, HOT 0.0): rules fire 0.8 / 0.2 / 0.0 → SLOW dominates → **fan ≈ 20–30%** — cool room, AC barely runs.
+- **Solved at 35°C** (COOL 0.0, WARM 0.2, HOT 0.9): rules fire 0.0 / 0.2 / 0.9 → FAST dominates → **fan ≈ 85–90%.**
+- **Cruise control (slides' activity):** error +5 km/h → ABOUT_RIGHT 0.5 + TOO_FAST 0.5 → HOLD and DECREASE tie → **slight throttle decrease**. Error −8 → TOO_SLOW 0.8 dominates → **strong increase**. **Further from target = stronger correction — like a human driver.**
+- **Why ABS uses fuzzy (slides' quiz):** binary "IF locked THEN release" = jerky on-off braking; fuzzy graduated rules 14×/second = **smooth proportional pressure → shorter stops + steering control maintained.**
+- Inventor: **Lotfi Zadeh, 1965** — rice cookers, camera autofocus, ABS, washing machines.
+
+### Part 5 worked examples — SOLVED (likely exam Qs)
+
+**① E-commerce Markov (slides' quiz):** from Cart: P(Checkout)=0.5; from Checkout: P(Buy)=0.7. Customer in Cart → P(Buy in exactly 2 steps) = single named path → multiply: **0.5 × 0.7 = 35%.** Markov property: only current state (Cart) matters — how they reached Cart is irrelevant.
+
+**② Customer journey (slides' activity):** Browse→Cart = 0.30 (read straight from table). P(Browse→Cart→Checkout) = 0.30 × 0.50 = **15%**. Highest Leave rate = **Browse (50%)** → fix UX there (better search, recommendations, faster load); cutting Browse-Leave 50%→30% could nearly double conversion.
+
+**③ Psychologist (slides' quiz):** can't see Depressed/Stable, observes Engaged/Withdrawn/Tearful → **HMM** — hidden states cause the observations; a Markov chain would be wrong because the state is unobservable.
+
+**④ Chess (slides' quiz):** predict next move → only the **current board position** needed — **Markov property**; history is embedded in the present position.
+
+**⑤ Patient fuzzy ops:** young=0.6, healthy=0.8 → AND 0.6 · OR 0.8 · NOT young 0.4 (solved in 5.3).
+
+**⑥ AC at 22°C:** fires 0.8/0.2/0.0 → fan ~20–30%, mostly SLOW (solved in 5.4).
+
+### 🧠 REMEMBER (Part 5)
+
+- **Markov Property: next depends only on CURRENT state** — history irrelevant (square 34, chess board).
+- Matrix: **row = from, column = to; every row sums to 1.**
+- **Multiply within a story, add across stories.** Exact route named → one story, just multiply.
+- **HMM = hidden states seen through footprints** (umbrella prisoner). Transition = hidden→hidden · Emission = hidden→seen. **Eyeball method: each observation points at its strongest emitter.**
+- **Fuzzy: AND=MIN · OR=MAX · NOT=1−μ** — and fuzzy AND is NOT multiply.
+- **F-R-A-D: Fuzzify → Rules fire at their IF-part's μ → Aggregate (clip+merge) → Defuzzify (centroid).** Output leans toward the strongest rule.
+- Probability = uncertain FACT · Fuzzy = vague WORD.
+
+---
+
+## 🎯 THE BIG PICTURE (Lecture 4's closing slide — the quick selector)
+
+**Tier 1 — storing CERTAIN knowledge:** facts → **RDF** triples · rules/meaning → **OWL** · queries → **SPARQL**.
+**Tier 2 — reasoning under UNCERTAINTY:** update beliefs with evidence → **Bayes** · cause↔effect maps → **Bayesian Networks** · predict sequences from current state → **Markov/HMM** · vague words & smooth control → **Fuzzy**.
+
+> Selector line for any exam scenario: **storing facts→RDF · rules→OWL · querying→SPARQL · updating belief→Bayes · causes+effects→BayesNet · sequences→Markov · hidden states→HMM · vague words→Fuzzy.**
